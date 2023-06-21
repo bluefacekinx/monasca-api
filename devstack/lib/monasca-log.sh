@@ -281,7 +281,7 @@ function clean_monasca_log {
     clean_logstash
     clean_nodejs
     clean_nvm
-    clean_yarn
+    # clean_yarn
     clean_gate_config_holder
 }
 ###############################################################################
@@ -470,9 +470,7 @@ function start_kibana {
 
 function configure_nvm {
     if is_service_enabled kibana; then
-        echo_summary "Configuring NVM"
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-        source ~/.nvm/nvm.sh
+        echo_summary "Configuring KIBANA NVM"
         nvm install $KIBANA_DEV_NODE_JS_VERSION
         nvm use $KIBANA_DEV_NODE_JS_VERSION
     fi
@@ -480,28 +478,24 @@ function configure_nvm {
 
 function configure_yarn {
     if is_service_enabled kibana; then
-        echo_summary "Configuring Yarn"
-        REPOS_UPDATED=False
-        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-        echo "deb https://dl.yarnpkg.com/debian/ stable main" | \
-            sudo tee /etc/apt/sources.list.d/yarn.list
-        apt_get_update
-        apt_get install yarn
+        npm install -g yarn
     fi
 }
 
 function clean_nvm {
     if is_service_enabled kibana; then
-        echo_summary "Cleaning NVM"
-        rm -rf ~/.nvm
-        rm -rf ~/.bower
+        echo_summary "Cleaning KIBANA NVM"
+        nvm deactive
+
+        nvm install NODE_JS_VERSION
+        nvm use NODE_JS_VERSION
     fi
 }
 
 function clean_yarn {
     if is_service_enabled kibana; then
         echo_summary "Cleaning Yarn"
-        apt_get purge yarn
+        npm uninstall -g yarn
     fi
 }
 

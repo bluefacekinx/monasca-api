@@ -183,16 +183,16 @@ function extra_monasca {
     if is_service_enabled horizon; then
         install_nodejs
         install_go
-        install_monasca_grafana
+        # install_monasca_grafana
     fi
 
     start_monasca_services
     init_collector_service
     post_storm
 
-    if is_service_enabled horizon; then
-        init_monasca_grafana
-    fi
+    # if is_service_enabled horizon; then
+    #     init_monasca_grafana
+    # fi
 }
 
 function start_monasca_services {
@@ -205,9 +205,9 @@ function start_monasca_services {
     if is_service_enabled monasca-thresh; then
         start_service monasca-thresh || restart_service monasca-thresh
     fi
-    if is_service_enabled horizon; then
-        start_service grafana-server || restart_service grafana-server
-    fi
+    # if is_service_enabled horizon; then
+    #     start_service grafana-server || restart_service grafana-server
+    # fi
     if is_service_enabled monasca-agent; then
         sudo /usr/local/bin/monasca-reconfigure
         if is_service_enabled nova && [ "$VIRT_DRIVER" = "libvirt" ]; then
@@ -233,7 +233,7 @@ function delete_kafka_topics {
 }
 
 function unstack_monasca {
-    stop_service grafana-server || true
+    # stop_service grafana-server || true
 
     [[ -f /etc/systemd/system/monasca-agent.target ]] && stop_service monasca-agent.target || true
 
@@ -265,7 +265,7 @@ function clean_monasca {
 
     if is_service_enabled horizon; then
         clean_nodejs
-        clean_monasca_grafana
+        # clean_monasca_grafana
         clean_go
     fi
 
@@ -1266,16 +1266,24 @@ function clean_monasca_agent {
     fi
 }
 
-# install nodejs and npm packages, works behind corporate proxy
-# and does not result in gnutsl_handshake error
 function install_nodejs {
+    echo_summary "Install Node.js(NVM)"
+    source ~/.bashrc
+    source ~/.nvm/nvm.sh
+    nvm --version
 
-    echo_summary "Install Node.js"
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+    if [ $? != 0 ]; then
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+    fi
 
-    apt_get install nodejs
-    npm config set registry "http://registry.npmjs.org/"; \
-    npm config set proxy "${HTTP_PROXY}"; \
+    source ~/.nvm/nvm.sh
+    nvm install $NODE_JS_VERSION
+    nvm use $NODE_JS_VERSION
+
+    npm config set registry "http://registry.npmjs.org/"
+    if [ ! -z ${HTTP_PROXY+x} ] && [[ $HTTP_PROXY = http* ]]; then
+        npm config set proxy "${HTTP_PROXY}"
+    fi
     npm set strict-ssl false;
 }
 
@@ -1322,7 +1330,7 @@ function install_monasca_grafana {
 
     npm config set unsafe-perm true
     npm install
-    sudo npm install -g grunt-cli
+    npm install -g grunt-cli
     grunt --force
 
     cd "${MONASCA_BASE}"
@@ -1352,7 +1360,7 @@ function install_monasca_grafana {
 }
 
 function clean_nodejs {
-    apt_get purge nodejs npm
+    nvm deactivate
 }
 
 function clean_monasca_grafana {
@@ -1519,7 +1527,7 @@ if is_service_enabled monasca-log; then
         # Initialize and start the Monasca service
         echo_summary "Initializing Monasca Log Management"
         init_monasca_log
-        init_monasca_grafana_dashboards
+        # init_monasca_grafana_dashboards
         if is_service_enabled monasca-agent; then
             init_agent
         fi
