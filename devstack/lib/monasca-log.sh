@@ -516,7 +516,7 @@ function build_kibana_plugin {
         yarn --cwd $KIBANA_DEV_DIR kbn bootstrap
         yarn --cwd $plugin_dir build
 
-        local get_version_script="import json; obj = json.load(open('$plugin_dir/package.json')); print obj['version']"
+        local get_version_script="import json; obj = json.load(open('$plugin_dir/package.json')); print(obj['version'])"
         local monasca_kibana_plugin_version
         monasca_kibana_plugin_version=$(python -c "$get_version_script")
         local pkg="$plugin_dir/build/monasca-kibana-plugin-$monasca_kibana_plugin_version.zip"
