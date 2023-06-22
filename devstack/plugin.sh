@@ -1281,7 +1281,7 @@ function install_nvm {
 
 function configure_nvm {
     CURRENT_NODE_JS_VERSION=${1:-"${NODE_JS_VERSION}"}
-    echo_summary "Install NVM(${CURRENT_NODE_JS_VERSION})})"
+    echo_summary "Configure NVM v${CURRENT_NODE_JS_VERSION}"
 
     source ~/.nvm/nvm.sh
     nvm install $CURRENT_NODE_JS_VERSION
