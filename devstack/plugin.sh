@@ -181,8 +181,9 @@ function extra_monasca {
     install_monasca_profile
 
     if is_service_enabled horizon; then
-        install_nodejs
+        install_nvm
         install_go
+        configure_nvm
         # install_monasca_grafana
     fi
 
@@ -1266,19 +1267,25 @@ function clean_monasca_agent {
     fi
 }
 
-function install_nodejs {
-    echo_summary "Install Node.js(NVM)"
+function install_nvm {
+    echo_summary "Install NVM"
     source ~/.bashrc
     source ~/.nvm/nvm.sh
     nvm --version
 
     if [ $? != 0 ]; then
-        curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/v$NVM_VERSION/install.sh | bash
     fi
 
+}
+
+function configure_nvm {
+    CURRENT_NODE_JS_VERSION=${1:-"${NODE_JS_VERSION}"}
+    echo_summary "Install NVM(${CURRENT_NODE_JS_VERSION})})"
+
     source ~/.nvm/nvm.sh
-    nvm install $NODE_JS_VERSION
-    nvm use $NODE_JS_VERSION
+    nvm install $CURRENT_NODE_JS_VERSION
+    nvm use $CURRENT_NODE_JS_VERSION
 
     npm config set registry "http://registry.npmjs.org/"
     if [ ! -z ${HTTP_PROXY+x} ] && [[ $HTTP_PROXY = http* ]]; then

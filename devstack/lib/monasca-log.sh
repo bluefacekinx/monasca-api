@@ -83,12 +83,13 @@ is_logstash_required() {
 ###############################################################################
 function pre_install_logs_services {
     install_elk
-    install_nodejs
+    install_nvm
+    configure_nvm
     install_gate_config_holder
 }
 
 function install_monasca_log {
-    configure_nvm
+    configure_nvm $KIBANA_DEV_NODE_JS_VERSION
     configure_yarn
     build_kibana_plugin
     install_log_agent
@@ -471,9 +472,21 @@ function start_kibana {
 function configure_nvm {
     if is_service_enabled kibana; then
         echo_summary "Configuring KIBANA NVM"
+
+        source ~/.nvm/nvm.sh
         nvm install $KIBANA_DEV_NODE_JS_VERSION
         nvm use $KIBANA_DEV_NODE_JS_VERSION
+
+        configure_npm
     fi
+}
+
+function cinfugure_npm {
+    npm config set registry "http://registry.npmjs.org/"
+    if [ ! -z ${HTTP_PROXY+x} ] && [[ $HTTP_PROXY = http* ]]; then
+        npm config set proxy "${HTTP_PROXY}"
+    fi
+    npm set strict-ssl false;
 }
 
 function configure_yarn {
@@ -485,10 +498,12 @@ function configure_yarn {
 function clean_nvm {
     if is_service_enabled kibana; then
         echo_summary "Cleaning KIBANA NVM"
-        nvm deactive
 
-        nvm install NODE_JS_VERSION
-        nvm use NODE_JS_VERSION
+        nvm deactivated
+        nvm install $NODE_JS_VERSION
+        nvm use $NODE_JS_VERSION
+
+        configure_npm
     fi
 }
 
